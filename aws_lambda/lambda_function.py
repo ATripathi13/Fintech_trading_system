@@ -4,18 +4,15 @@ from io import StringIO
 from datetime import datetime
 
 def lambda_handler(event, context):
-    # Get today's date
     today = datetime.utcnow().date()
     year = today.strftime('%Y')
     month = today.strftime('%m')
     day = today.strftime('%d')
     
-    # Construct S3 file paths
     bucket = 'your-bucket'
     input_key = f"{year}/{month}/{day}/trades.csv"
     output_key = f"{year}/{month}/{day}/analysis_{today}.csv"
 
-    # Fetch the CSV from S3
     s3 = boto3.client('s3')
     try:
         csv_file = s3.get_object(Bucket=bucket, Key=input_key)['Body'].read().decode('utf-8')
@@ -23,13 +20,11 @@ def lambda_handler(event, context):
     except Exception as e:
         return {"error": f"Failed to read input file: {input_key}", "details": str(e)}
 
-    # Perform aggregation
     results = df.groupby('ticker').agg(
         total_volume=('quantity', 'sum'),
         avg_price=('price', 'mean')
     ).reset_index()
 
-    # Save result to S3
     csv_buffer = StringIO()
     results.to_csv(csv_buffer, index=False)
 
