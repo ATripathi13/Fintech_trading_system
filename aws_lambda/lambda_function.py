@@ -8,7 +8,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def lambda_handler(event, context):
-    today = datetime.utcnow().date()
+    date_str = event.get("date")
+    if date_str:
+        try:
+            today = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except Exception:
+            today = datetime.utcnow().date()
+    else:
+        today = datetime.utcnow().date()
+
     year = today.strftime('%Y')
     month = today.strftime('%m')
     day = today.strftime('%d')
